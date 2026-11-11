@@ -71,6 +71,9 @@ enum Theme {
     static let toggleActive = Color(light: Color(hex: 0x2F2A45), dark: Color(hex: 0xF3F0FF))
     static let toggleActiveText = Color(light: .white, dark: Color(hex: 0x2F2A45))
 
+    // 복사 메뉴
+    static let menuBackground = Color(light: Color(hex: 0x2F2A45), dark: Color(hex: 0x3B3558))
+
     // 설정 목록 구분선
     static let separator = Color(light: Color(hex: 0x2F2A45, opacity: 0.08), dark: .white.opacity(0.08))
 
