@@ -2,13 +2,14 @@
 //  ContentView.swift
 //  PetiteCalc
 //
-//  피그마 03 Basic Calculator 화면 (모양 단계 — 계산 기능은 다음 단계)
+//  피그마 03 Basic Calculator 화면 + 08 Error 표시
 //
 
 import SwiftUI
 
 struct ContentView: View {
     @State private var mode: CalcMode = .basic
+    @State private var calculator = Calculator()
 
     private let rows: [[CalcKey]] = [
         [.init(label: "AC", type: .function), .init(label: "±", type: .function),
@@ -33,7 +34,11 @@ struct ContentView: View {
 
                 Spacer(minLength: 0)
 
-                DisplayView(expression: "1,200 + 34.5", result: "1,234.5")
+                DisplayView(
+                    expression: calculator.expression,
+                    result: calculator.displayText,
+                    isError: calculator.errorMessage != nil
+                )
                     .padding(.bottom, 20)
 
                 keypad
@@ -41,6 +46,14 @@ struct ContentView: View {
             }
             .padding(.horizontal, Theme.sidePadding)
         }
+        #if DEBUG
+        // 확인용: 실행 인자 -keys "1200+34.5=" 로 버튼 순서를 미리 눌러 볼 수 있음
+        .onAppear {
+            if let i = CommandLine.arguments.firstIndex(of: "-keys"), i + 1 < CommandLine.arguments.count {
+                CommandLine.arguments[i + 1].forEach { calculator.press(String($0)) }
+            }
+        }
+        #endif
     }
 
     private var topBar: some View {
@@ -61,7 +74,11 @@ struct ContentView: View {
                 ForEach(rows.indices, id: \.self) { r in
                     HStack(spacing: Theme.keySpacing) {
                         ForEach(rows[r]) { key in
-                            KeyButton(key: key, width: key.isWide ? unit * 2 + Theme.keySpacing : unit)
+                            KeyButton(key: key, width: key.isWide ? unit * 2 + Theme.keySpacing : unit) {
+                                withAnimation(.snappy(duration: 0.2)) {
+                                    calculator.press(key.label)
+                                }
+                            }
                         }
                     }
                 }

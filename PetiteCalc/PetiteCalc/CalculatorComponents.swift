@@ -94,19 +94,32 @@ struct GlassKeyStyle: ButtonStyle {
 struct DisplayView: View {
     let expression: String
     let result: String
+    var isError = false
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 4) {
-            Text(expression)
+            // 비어 있어도 줄 높이는 유지해서 숫자가 위아래로 튀지 않게
+            Text(expression.isEmpty ? " " : expression)
                 .font(AppFont.displayExpression)
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(1)
-            Text(result)
-                .font(AppFont.displayResult)
-                .tracking(-1.92)
-                .foregroundStyle(Theme.textPrimary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.4)
+                .minimumScaleFactor(0.6)
+            if isError {
+                Text(result)
+                    .font(AppFont.displayError)
+                    .tracking(-0.9)
+                    .foregroundStyle(Theme.textError)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+            } else {
+                Text(result)
+                    .font(AppFont.displayResult)
+                    .tracking(-1.92)
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.4)
+                    .contentTransition(.numericText())
+            }
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
