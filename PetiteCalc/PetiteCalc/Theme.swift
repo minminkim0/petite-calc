@@ -2,10 +2,12 @@
 //  Theme.swift
 //  PetiteCalc
 //
-//  피그마 "Pastel Glass" 변수와 텍스트 스타일을 옮긴 것.
+//  피그마 "Pastel Glass" 색·크기·글꼴.
+//  다크 모드 색은 피그마에 없어서 같은 톤(보라·핑크·민트)을 밤 버전으로 맞춤.
 //
 
 import SwiftUI
+import UIKit
 import CoreText
 
 extension Color {
@@ -18,30 +20,41 @@ extension Color {
             opacity: opacity
         )
     }
+
+    /// 라이트/다크 모드에 따라 자동으로 바뀌는 색
+    init(light: Color, dark: Color) {
+        self.init(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+        })
+    }
 }
 
 enum Theme {
     // 배경 그라디언트
     static let background = LinearGradient(
         stops: [
-            .init(color: Color(hex: 0xFCE3EC), location: 0),
-            .init(color: Color(hex: 0xE6E4FB), location: 0.35),
-            .init(color: Color(hex: 0xDDF0F7), location: 0.78),
+            .init(color: Color(light: Color(hex: 0xFCE3EC), dark: Color(hex: 0x2A1E36)), location: 0),
+            .init(color: Color(light: Color(hex: 0xE6E4FB), dark: Color(hex: 0x1F1C38)), location: 0.35),
+            .init(color: Color(light: Color(hex: 0xDDF0F7), dark: Color(hex: 0x14263A)), location: 0.78),
         ],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
     // 글자
-    static let textPrimary = Color(hex: 0x2F2A45)
-    static let textSecondary = Color(hex: 0x807A9C)
+    static let textPrimary = Color(light: Color(hex: 0x2F2A45), dark: Color(hex: 0xF3F0FF))
+    static let textSecondary = Color(light: Color(hex: 0x807A9C), dark: Color(hex: 0xA9A2CC))
+    static let textScientific = Color(light: Color(hex: 0x4A4466), dark: Color(hex: 0xD6D0F2))
     static let textOnAccent = Color.white
-    static let textError = Color(hex: 0xD9467A)
+    static let textError = Color(light: Color(hex: 0xD9467A), dark: Color(hex: 0xFF7DAA))
+    static let textAccent = Color(light: Color(hex: 0x7C6CF2), dark: Color(hex: 0xA99DFF))
 
     // 유리 버튼
-    static let keyNumber = Color.white.opacity(0.55)
-    static let keyFunction = Color.white.opacity(0.32)
-    static let keyBorder = Color.white.opacity(0.75)
+    static let keyNumber = Color(light: .white.opacity(0.55), dark: .white.opacity(0.10))
+    static let keyFunction = Color(light: .white.opacity(0.32), dark: .white.opacity(0.06))
+    static let keyScientific = Color(light: .white.opacity(0.38), dark: .white.opacity(0.07))
+    static let keyBorder = Color(light: .white.opacity(0.75), dark: .white.opacity(0.16))
+    static let keyPressedOverlay = Color(light: .white.opacity(0.25), dark: .white.opacity(0.12))
     static let keyOperator = Color(hex: 0x7C6CF2)
     static let keyEquals = LinearGradient(
         stops: [
@@ -51,17 +64,18 @@ enum Theme {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
-    static let keyShadow = Color(hex: 0x50468C, opacity: 0.10)
+    static let keyShadow = Color(light: Color(hex: 0x50468C, opacity: 0.10), dark: .black.opacity(0.30))
 
-    // 모드 토글
-    static let toggleTrack = Color.white.opacity(0.45)
-    static let toggleActive = Color(hex: 0x2F2A45)
+    // 모드 토글 · 켜진 버튼(2nd)
+    static let toggleTrack = Color(light: .white.opacity(0.45), dark: .white.opacity(0.08))
+    static let toggleActive = Color(light: Color(hex: 0x2F2A45), dark: Color(hex: 0xF3F0FF))
+    static let toggleActiveText = Color(light: .white, dark: Color(hex: 0x2F2A45))
 
-    // 크기
-    static let keyRadius: CGFloat = 22
-    static let keySpacing: CGFloat = 11
-    static let keyHeight: CGFloat = 76
+    // 설정 목록 구분선
+    static let separator = Color(light: Color(hex: 0x2F2A45, opacity: 0.08), dark: .white.opacity(0.08))
+
     static let sidePadding: CGFloat = 20
+    static let keySpacing: CGFloat = 11
 }
 
 // MARK: - 글꼴
@@ -79,12 +93,13 @@ enum AppFont {
         .custom(family, fixedSize: size).weight(weight)
     }
 
+    /// 한글: Noto Sans KR 대신 시스템 한글 글꼴
+    static func korean(_ size: CGFloat, _ weight: Font.Weight) -> Font {
+        .system(size: size, weight: weight)
+    }
+
     static let displayExpression = jakarta(17, .medium)
     static let displayResult = jakarta(64, .semibold)
-    static let keyNumber = jakarta(30, .semibold)
-    static let keyFunction = jakarta(24, .semibold)
-    static let keyOperator = jakarta(36, .semibold)
-    // 한글 토글 라벨: Noto Sans KR 대신 시스템 한글 글꼴(굵게) 사용
-    static let toggleLabel = Font.system(size: 12, weight: .bold)
-    static let displayError = Font.system(size: 30, weight: .bold)
+    static let displayError = korean(30, .bold)
+    static let toggleLabel = korean(12, .bold)
 }

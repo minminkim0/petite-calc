@@ -10,7 +10,7 @@ import SwiftUI
 // MARK: - Key
 
 enum KeyType {
-    case number, function, operation, equals
+    case number, function, operation, equals, scientific
 }
 
 struct CalcKey: Identifiable {
@@ -20,44 +20,62 @@ struct CalcKey: Identifiable {
     var id: String { label }
 }
 
+/// 키 크기·글자 크기 (기본 화면 / 공학 화면)
+struct KeyMetrics {
+    let height: CGFloat
+    let radius: CGFloat
+    let numberSize: CGFloat
+    let functionSize: CGFloat
+    let operatorSize: CGFloat
+
+    static let basic = KeyMetrics(height: 76, radius: 22, numberSize: 30, functionSize: 24, operatorSize: 36)
+    static let scientific = KeyMetrics(height: 58, radius: 22, numberSize: 22, functionSize: 18, operatorSize: 28)
+    static let scientificTop = KeyMetrics(height: 40, radius: 14, numberSize: 14, functionSize: 14, operatorSize: 14)
+}
+
 struct KeyButton: View {
     let key: CalcKey
     let width: CGFloat
+    let metrics: KeyMetrics
+    var isActive = false
     var action: () -> Void = {}
 
     var body: some View {
         Button(action: action) {
             Text(key.label)
-                .font(font)
+                .font(AppFont.jakarta(fontSize, .semibold))
                 .tracking(tracking)
                 .foregroundStyle(textColor)
                 .frame(maxWidth: .infinity, alignment: key.isWide ? .leading : .center)
                 .padding(.leading, key.isWide ? 30 : 0)
-                .frame(width: width, height: Theme.keyHeight)
+                .frame(width: width, height: metrics.height)
+                .contentShape(Rectangle())
         }
-        .buttonStyle(GlassKeyStyle(type: key.type))
+        .buttonStyle(GlassKeyStyle(type: key.type, radius: metrics.radius, isActive: isActive))
+        .accessibilityLabel(key.label)
     }
 
-    private var font: Font {
+    private var fontSize: CGFloat {
         switch key.type {
-        case .number: AppFont.keyNumber
-        case .function: AppFont.keyFunction
-        case .operation, .equals: AppFont.keyOperator
+        case .number: metrics.numberSize
+        case .function, .scientific: metrics.functionSize
+        case .operation, .equals: metrics.operatorSize
         }
     }
 
     private var tracking: CGFloat {
         switch key.type {
-        case .number: -0.3
-        case .function: -0.24
-        case .operation, .equals: 0
+        case .number, .function: -fontSize / 100
+        default: 0
         }
     }
 
     private var textColor: Color {
+        if isActive { return Theme.toggleActiveText }
         switch key.type {
-        case .number, .function: Theme.textPrimary
-        case .operation, .equals: Theme.textOnAccent
+        case .number, .function: return Theme.textPrimary
+        case .scientific: return Theme.textScientific
+        case .operation, .equals: return Theme.textOnAccent
         }
     }
 }
@@ -65,21 +83,28 @@ struct KeyButton: View {
 /// 유리 버튼 스타일 — 누르면 밝아지고 그림자가 사라지며 94%로 작아짐
 struct GlassKeyStyle: ButtonStyle {
     let type: KeyType
+    var radius: CGFloat = 22
+    var isActive = false
 
     func makeBody(configuration: Configuration) -> some View {
         let pressed = configuration.isPressed
-        let shape = RoundedRectangle(cornerRadius: Theme.keyRadius, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
 
         configuration.label
             .background {
                 ZStack {
-                    switch type {
-                    case .number: shape.fill(Theme.keyNumber)
-                    case .function: shape.fill(Theme.keyFunction)
-                    case .operation: shape.fill(Theme.keyOperator)
-                    case .equals: shape.fill(Theme.keyEquals)
+                    if isActive {
+                        shape.fill(Theme.toggleActive)
+                    } else {
+                        switch type {
+                        case .number: shape.fill(Theme.keyNumber)
+                        case .function: shape.fill(Theme.keyFunction)
+                        case .scientific: shape.fill(Theme.keyScientific)
+                        case .operation: shape.fill(Theme.keyOperator)
+                        case .equals: shape.fill(Theme.keyEquals)
+                        }
                     }
-                    if pressed { shape.fill(Color.white.opacity(0.25)) }
+                    if pressed { shape.fill(Theme.keyPressedOverlay) }
                 }
             }
             .overlay { shape.strokeBorder(Theme.keyBorder, lineWidth: 1) }
@@ -144,7 +169,7 @@ struct ModeToggle: View {
                 } label: {
                     Text(item.rawValue)
                         .font(AppFont.toggleLabel)
-                        .foregroundStyle(active ? Theme.textOnAccent : Theme.textSecondary)
+                        .foregroundStyle(active ? Theme.toggleActiveText : Theme.textSecondary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 7)
                         .background {
@@ -170,7 +195,9 @@ struct IconButton: View {
     var body: some View {
         Button(action: action) {
             Image(imageName)
+                .renderingMode(.template)
                 .resizable()
+                .foregroundStyle(Theme.textPrimary)
                 .frame(width: 24, height: 24)
                 .frame(width: 40, height: 40)
                 .background(Circle().fill(Theme.keyFunction))
@@ -178,4 +205,51 @@ struct IconButton: View {
         }
         .buttonStyle(.plain)
     }
+}
+
+/// 기록·설정 화면 위쪽: 닫기 버튼 + 가운데 제목
+struct ScreenHeader: View {
+    let title: String
+    let onClose: () -> Void
+
+    var body: some View {
+        ZStack {
+            Text(title)
+                .font(AppFont.korean(18, .bold))
+                .foregroundStyle(Theme.textPrimary)
+            HStack {
+                IconButton(imageName: "IconClose", action: onClose)
+                    .accessibilityLabel("닫기")
+                Spacer()
+            }
+        }
+        .padding(.horizontal, Theme.sidePadding)
+        .padding(.top, 6)
+    }
+}
+
+/// 기록·설정의 묶음 제목 ("오늘", "계산" …)
+struct SectionLabel: View {
+    let text: String
+    var body: some View {
+        Text(text)
+            .font(AppFont.korean(13, .bold))
+            .foregroundStyle(Theme.textSecondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// 유리 카드 배경
+struct GlassCard: ViewModifier {
+    var radius: CGFloat = 20
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
+        content
+            .background(shape.fill(Theme.keyNumber))
+            .overlay(shape.strokeBorder(Theme.keyBorder, lineWidth: 1))
+    }
+}
+
+extension View {
+    func glassCard(radius: CGFloat = 20) -> some View { modifier(GlassCard(radius: radius)) }
 }
