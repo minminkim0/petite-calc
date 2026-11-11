@@ -36,6 +36,7 @@ enum Theme {
     static let textPrimary = Color(hex: 0x2F2A45)
     static let textSecondary = Color(hex: 0x807A9C)
     static let textOnAccent = Color.white
+    static let textError = Color(hex: 0xD9467A)
 
     // 유리 버튼
     static let keyNumber = Color.white.opacity(0.55)
@@ -85,4 +86,5 @@ enum AppFont {
     static let keyOperator = jakarta(36, .semibold)
     // 한글 토글 라벨: Noto Sans KR 대신 시스템 한글 글꼴(굵게) 사용
     static let toggleLabel = Font.system(size: 12, weight: .bold)
+    static let displayError = Font.system(size: 30, weight: .bold)
 }
