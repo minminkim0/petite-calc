@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>계산기 시안 비교</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* =========================================================
+   계산기 톤앤매너 시안 4종 비교 페이지
+   각 시안은 .theme-xxx 클래스의 CSS 변수만 다르고 화면 구조는 같습니다.
+   ========================================================= */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #F4F5F7; color: #2A2F38; font-family: "Plus Jakarta Sans", "Pretendard", -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+.page { max-width: 1240px; margin: 0 auto; padding: 56px 24px 96px; }
+.page-head h1 { font-size: clamp(30px, 4vw, 44px); font-weight: 800; letter-spacing: -.03em; }
+.page-head p { margin-top: 10px; color: #6B7280; font-size: 16px; line-height: 1.7; max-width: 720px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.legend span { font-size: 13px; font-weight: 600; background: #fff; border: 1px solid #E5E7EB; border-radius: 999px; padding: 5px 12px; }
+
+.concept { margin-top: 56px; background: #fff; border: 1px solid #E5E7EB; border-radius: 24px; padding: 32px; display: grid; grid-template-columns: 300px 1fr; gap: 36px; align-items: start; }
+.concept .num { font-size: 13px; font-weight: 800; letter-spacing: .12em; color: #9CA3AF; }
+.concept h2 { font-size: 28px; font-weight: 800; letter-spacing: -.03em; margin: 6px 0 10px; }
+.concept .desc { font-size: 15px; line-height: 1.7; color: #4B5563; }
+.concept ul { margin: 14px 0 0 18px; font-size: 14px; line-height: 1.8; color: #4B5563; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.chip { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #4B5563; }
+.chip i { width: 22px; height: 22px; border-radius: 7px; border: 1px solid rgba(0,0,0,.08); display: inline-block; }
+.phones { display: flex; flex-wrap: wrap; gap: 28px; justify-content: flex-start; }
+.phone-wrap { text-align: center; }
+.phone-wrap .cap { margin-top: 12px; font-size: 13px; font-weight: 700; color: #6B7280; }
+
+/* ---------- 아이폰 프레임 ---------- */
+.phone {
+  width: 300px; height: 630px; border-radius: 48px; padding: 12px; background: #111;
+  box-shadow: 0 30px 60px rgba(17,24,39,.18), inset 0 0 0 2px #2b2b2b;
+}
+.screen {
+  position: relative; width: 100%; height: 100%; border-radius: 38px; overflow: hidden;
+  background: var(--bg); color: var(--text); display: flex; flex-direction: column;
+  font-family: var(--font);
+}
+.island { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 92px; height: 26px; border-radius: 20px; background: #000; z-index: 3; }
+.status { display: flex; justify-content: space-between; padding: 14px 26px 0; font: 600 13px -apple-system, sans-serif; color: var(--status); }
+.mode { display: flex; justify-content: center; gap: 4px; margin: 14px auto 0; padding: 3px; border-radius: 999px; background: var(--seg-bg); width: max-content; }
+.mode b { font: 700 11px var(--ui-font); padding: 5px 12px; border-radius: 999px; color: var(--seg-text); }
+.mode b.on { background: var(--seg-on); color: var(--seg-on-text); }
+
+/* 표시창 */
+.display { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 0 22px 12px; }
+.display .expr { font: 500 15px var(--ui-font); color: var(--sub); min-height: 20px; }
+.display .result { font-size: var(--result-size); font-weight: var(--result-weight); letter-spacing: var(--result-ls); line-height: 1.05; color: var(--text); }
+.lcd .display { margin: 0 16px 14px; padding: 14px 16px 10px; border-radius: 12px; background: var(--lcd); box-shadow: inset 0 3px 8px rgba(0,0,0,.18); flex: 0 0 auto; min-height: 120px; justify-content: flex-end; }
+.lcd .spacer { flex: 1; }
+
+/* 키패드 */
+.pad { display: grid; gap: var(--gap); padding: 0 16px 26px; }
+.pad.basic { grid-template-columns: repeat(4, 1fr); }
+.pad.sci { grid-template-columns: repeat(5, 1fr); padding-bottom: 8px; }
+.pad.sci-base { grid-template-columns: repeat(5, 1fr); }
+.key {
+  display: flex; align-items: center; justify-content: center; user-select: none; cursor: pointer;
+  border-radius: var(--radius); font-family: var(--ui-font); font-weight: 600;
+  background: var(--k-num); color: var(--k-num-text); box-shadow: var(--k-shadow); border: var(--k-border);
+  transition: transform .08s ease, filter .15s ease;
+  -webkit-backdrop-filter: var(--k-blur); backdrop-filter: var(--k-blur);
+}
+.key:active, .key.pressed { transform: scale(.94); filter: brightness(1.12); }
+.basic .key { height: 58px; font-size: 26px; }
+.sci .key { height: 34px; font-size: 13px; }
+.sci-base .key { height: 44px; font-size: 19px; }
+.lcd .sci .key { height: 30px; }          /* 레트로는 LCD 창이 커서 공학 버튼을 조금 낮춤 */
+.lcd .sci-base .key { height: 39px; font-size: 17px; }
+.lcd .sci ~ .home-bar, .lcd .home-bar { bottom: 6px; }
+.key.fn { background: var(--k-fn); color: var(--k-fn-text); }
+.key.op { background: var(--k-op); color: var(--k-op-text); }
+.key.eq { background: var(--k-eq); color: var(--k-eq-text); }
+.key.sf { background: var(--k-sci); color: var(--k-sci-text); font-weight: 600; }
+.key.zero { grid-column: span 2; justify-content: flex-start; padding-left: 24px; }
+.key.zero-sci { grid-column: span 2; }
+.home-bar { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 110px; height: 5px; border-radius: 3px; background: var(--home); }
+
+/* ---------- 시안 1: 미드나잇 (다크) ---------- */
+.theme-midnight {
+  --bg: #0E1116; --text: #F5F7FA; --sub: #7B8494; --status: #F5F7FA; --home: #F5F7FA;
+  --font: -apple-system, "SF Pro Display", "Plus Jakarta Sans", sans-serif; --ui-font: -apple-system, "Plus Jakarta Sans", sans-serif;
+  --result-size: 64px; --result-weight: 300; --result-ls: -.02em;
+  --gap: 12px; --radius: 999px;
+  --k-num: #1E232B; --k-num-text: #F5F7FA; --k-fn: #353C47; --k-fn-text: #F5F7FA;
+  --k-op: #2F9BE0; --k-op-text: #fff; --k-eq: #2F9BE0; --k-eq-text: #fff;
+  --k-sci: #161A21; --k-sci-text: #C9D1DC; --k-shadow: none; --k-border: 0; --k-blur: none;
+  --seg-bg: #1E232B; --seg-text: #7B8494; --seg-on: #353C47; --seg-on-text: #fff;
+}
+/* ---------- 시안 2: 에어리 스카이 (라이트, 웹사이트와 같은 톤) ---------- */
+.theme-airy {
+  --bg: #FCFDFE; --text: #3D4F63; --sub: #8B98A8; --status: #3D4F63; --home: #3D4F63;
+  --font: "Plus Jakarta Sans", sans-serif; --ui-font: "Plus Jakarta Sans", sans-serif;
+  --result-size: 58px; --result-weight: 800; --result-ls: -.04em;
+  --gap: 10px; --radius: 18px;
+  --k-num: #FFFFFF; --k-num-text: #3D4F63; --k-fn: #E8F0F7; --k-fn-text: #3D4F63;
+  --k-op: #E8F0F7; --k-op-text: #2491D1; --k-eq: #2491D1; --k-eq-text: #fff;
+  --k-sci: #F3F7FB; --k-sci-text: #55657A; --k-shadow: 0 2px 6px rgba(61,79,99,.08); --k-border: 1px solid #E8F0F7; --k-blur: none;
+  --seg-bg: #F3F7FB; --seg-text: #8B98A8; --seg-on: #3D4F63; --seg-on-text: #fff;
+}
+/* ---------- 시안 3: 레트로 LCD ---------- */
+.theme-retro {
+  --bg: #E7DFCF; --text: #24311D; --sub: #4E5F43; --status: #4A4237; --home: #4A4237; --lcd: #B9C7A0;
+  --font: "Share Tech Mono", monospace; --ui-font: "Plus Jakarta Sans", sans-serif;
+  --result-size: 46px; --result-weight: 400; --result-ls: .02em;
+  --gap: 10px; --radius: 10px;
+  --k-num: #F7F2E8; --k-num-text: #3B352C; --k-fn: #8E8A82; --k-fn-text: #fff;
+  --k-op: #E2742F; --k-op-text: #fff; --k-eq: #C9542A; --k-eq-text: #fff;
+  --k-sci: #D6CCB9; --k-sci-text: #3B352C; --k-shadow: 0 3px 0 rgba(0,0,0,.22); --k-border: 0; --k-blur: none;
+  --seg-bg: #D6CCB9; --seg-text: #6B6254; --seg-on: #3B352C; --seg-on-text: #F7F2E8;
+}
+/* ---------- 시안 4: 파스텔 글래스 ---------- */
+.theme-glass {
+  --bg: linear-gradient(160deg, #FCE3EC 0%, #E6E4FB 45%, #DDF0F7 100%); --text: #2F2A45; --sub: #807A9C; --status: #2F2A45; --home: #2F2A45;
+  --font: "Plus Jakarta Sans", sans-serif; --ui-font: "Plus Jakarta Sans", sans-serif;
+  --result-size: 56px; --result-weight: 600; --result-ls: -.03em;
+  --gap: 11px; --radius: 22px;
+  --k-num: rgba(255,255,255,.55); --k-num-text: #2F2A45; --k-fn: rgba(255,255,255,.32); --k-fn-text: #2F2A45;
+  --k-op: rgba(124,108,242,.88); --k-op-text: #fff; --k-eq: linear-gradient(135deg, #8E7CF7, #F08BB4); --k-eq-text: #fff;
+  --k-sci: rgba(255,255,255,.38); --k-sci-text: #4A4466; --k-shadow: 0 6px 16px rgba(80,70,140,.10); --k-border: 1px solid rgba(255,255,255,.75); --k-blur: blur(14px);
+  --seg-bg: rgba(255,255,255,.45); --seg-text: #807A9C; --seg-on: #2F2A45; --seg-on-text: #fff;
+}
+
+@media (max-width: 900px) {
+  .concept { grid-template-columns: 1fr; padding: 24px 16px; }
+  .phones { justify-content: center; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="page-head">
+    <h1>계산기 톤앤매너 시안</h1>
+    <p>같은 화면 구조에 색과 글꼴, 버튼 모양만 바꾼 4가지 시안입니다. 왼쪽 화면은 기본 계산기, 오른쪽은 공학용 계산기입니다. 버튼을 눌러 보면 눌리는 느낌도 확인할 수 있습니다. 실제 계산은 아직 되지 않는 디자인 시안입니다.</p>
+    <div class="legend"><span>아이폰 화면 비율</span><span>오프라인 앱 기준</span><span>기본 ↔ 공학 전환은 상단 버튼</span></div>
+  </header>
+
+  <div id="concepts"></div>
+</div>
+
+<script>
+// 시안 설명과 대표 색 (화면은 아래 render 함수가 공통으로 그림)
+const CONCEPTS = [
+  { id: 'midnight', name: '미드나잇', mood: '어둡고 차분한 기본형',
+    desc: '검정 바탕에 둥근 버튼, 가는 숫자. 가장 익숙하고 밤에도 눈이 편합니다. 포인트는 하늘색 한 가지만 씁니다.',
+    points: ['숫자는 얇고 크게 (굵기 300)', '버튼은 완전한 원형', '연산 버튼만 하늘색'],
+    colors: ['#0E1116', '#1E232B', '#353C47', '#2F9BE0'] },
+  { id: 'airy', name: '에어리 스카이', mood: '밝고 단정한 라이트형',
+    desc: 'minkim.online과 같은 톤입니다. 흰 바탕, 슬레이트 글씨, 스카이 블루 포인트로 웹사이트와 한 세트처럼 보입니다.',
+    points: ['숫자는 굵게 (Plus Jakarta Sans 800)', '버튼은 둥근 사각형', '= 버튼만 파란색으로 채움'],
+    colors: ['#FCFDFE', '#E8F0F7', '#3D4F63', '#2491D1'] },
+  { id: 'retro', name: '레트로 LCD', mood: '손맛 있는 80년대 전자계산기',
+    desc: '베이지 플라스틱 몸체에 초록 LCD 표시창. 버튼 아래 그림자로 실제로 눌리는 느낌을 줍니다.',
+    points: ['숫자는 LCD 글꼴', '버튼에 입체 그림자', '연산 버튼은 주황'],
+    colors: ['#E7DFCF', '#B9C7A0', '#F7F2E8', '#E2742F'] },
+  { id: 'glass', name: '파스텔 글래스', mood: '부드럽고 트렌디한 감성형',
+    desc: '분홍·보라·하늘 그라데이션 위에 반투명 유리 버튼. 홈 화면에 두었을 때 가장 예쁜 시안입니다.',
+    points: ['버튼 뒤가 비치는 유리 효과', '= 버튼은 보라→분홍 그라데이션', '부드러운 그림자'],
+    colors: ['#FCE3EC', '#E6E4FB', '#7C6CF2', '#F08BB4'] },
+];
+
+// 기본 계산기 버튼 배치 [글자, 종류]
+const BASIC = [
+  ['AC','fn'],['±','fn'],['%','fn'],['÷','op'],
+  ['7'],['8'],['9'],['×','op'],
+  ['4'],['5'],['6'],['−','op'],
+  ['1'],['2'],['3'],['+','op'],
+  ['0','zero'],['.'],['=','eq'],
+];
+// 공학용 추가 버튼 (5열)
+const SCI = [
+  ['2nd','sf'],['deg','sf'],['sin','sf'],['cos','sf'],['tan','sf'],
+  ['x²','sf'],['xʸ','sf'],['√','sf'],['ln','sf'],['log','sf'],
+  ['(','sf'],[')','sf'],['π','sf'],['e','sf'],['x!','sf'],
+];
+// 공학용 아래쪽 기본 버튼 (5열로 압축)
+const SCI_BASE = [
+  ['AC','fn'],['±','fn'],['%','fn'],['1/x','fn'],['÷','op'],
+  ['7'],['8'],['9'],['EE','fn'],['×','op'],
+  ['4'],['5'],['6'],['Rand','fn'],['−','op'],
+  ['1'],['2'],['3'],['mc','fn'],['+','op'],
+  ['0','zero-sci'],['.'],['mr','fn'],['=','eq'],
+];
+
+const keys = list => list.map(([t, k='']) => `<div class="key ${k}">${t}</div>`).join('');
+
+function phone(theme, isRetro, sci) {
+  const display = sci
+    ? `<div class="display"><div class="expr">sin(30°) + √16</div><div class="result">4.5</div></div>`
+    : `<div class="display"><div class="expr">1,200 + 34.5</div><div class="result">1,234.5</div></div>`;
+  return `
+  <div class="phone"><div class="screen theme-${theme} ${isRetro ? 'lcd' : ''}">
+    <div class="island"></div>
+    <div class="status"><span>9:41</span><span>●●● ◔</span></div>
+    <div class="mode"><b class="${sci ? '' : 'on'}">기본</b><b class="${sci ? 'on' : ''}">공학</b></div>
+    ${isRetro ? '<div class="spacer"></div>' : ''}
+    ${display}
+    ${sci ? `<div class="pad sci">${keys(SCI)}</div><div class="pad sci-base">${keys(SCI_BASE)}</div>`
+          : `<div class="pad basic">${keys(BASIC)}</div>`}
+    <div class="home-bar"></div>
+  </div></div>`;
+}
+
+document.getElementById('concepts').innerHTML = CONCEPTS.map((c, i) => `
+  <section class="concept">
+    <div>
+      <div class="num">시안 ${i + 1}</div>
+      <h2>${c.name}</h2>
+      <p class="desc"><b>${c.mood}.</b> ${c.desc}</p>
+      <ul>${c.points.map(p => `<li>${p}</li>`).join('')}</ul>
+      <div class="chips">${c.colors.map(col => `<span class="chip"><i style="background:${col}"></i>${col}</span>`).join('')}</div>
+    </div>
+    <div class="phones">
+      <div class="phone-wrap">${phone(c.id, c.id === 'retro', false)}<div class="cap">기본 계산기</div></div>
+      <div class="phone-wrap">${phone(c.id, c.id === 'retro', true)}<div class="cap">공학용 계산기</div></div>
+    </div>
+  </section>`).join('');
+
+// 버튼 눌림 느낌 (터치/클릭)
+document.addEventListener('pointerdown', e => { const k = e.target.closest('.key'); if (k) k.classList.add('pressed'); });
+document.addEventListener('pointerup', () => document.querySelectorAll('.key.pressed').forEach(k => k.classList.remove('pressed')));
+document.addEventListener('pointerleave', () => document.querySelectorAll('.key.pressed').forEach(k => k.classList.remove('pressed')));
+</script>
+</body>
+</html>

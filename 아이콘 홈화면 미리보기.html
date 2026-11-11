@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>아이콘 홈화면 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* =========================================================
+   앱 아이콘 v2 — 아이폰 홈 화면 실제 크기 미리보기
+   아이콘 그림은 아래 script의 iconSVG() 하나로 그리고, LCD 문구만 바꿔 끼웁니다.
+   ========================================================= */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #F4F3FA; color: #2F2A45; font-family: "Plus Jakarta Sans", "Pretendard", -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+.page { max-width: 1320px; margin: 0 auto; padding: 56px 24px 96px; }
+h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -.03em; }
+.lead { margin-top: 10px; color: #6B6585; font-size: 15px; line-height: 1.7; max-width: 760px; }
+h2 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; margin: 56px 0 6px; }
+.sub { color: #6B6585; font-size: 14px; margin-bottom: 22px; }
+
+/* 문구 후보 카드 */
+.cands { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.cand { background: #fff; border: 1px solid #E8E5F6; border-radius: 22px; padding: 22px; text-align: center; }
+.cand.current { background: #F7F6FC; }
+.cand .tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; padding: 4px 10px; border-radius: 999px; background: #EEEBFD; color: #6C5CE0; }
+.cand.current .tag { background: #ECEAF2; color: #807A9C; }
+.cand h3 { font-size: 20px; font-weight: 800; margin: 10px 0 4px; font-family: "Share Tech Mono", monospace; }
+.cand p { font-size: 13px; color: #6B6585; line-height: 1.6; min-height: 42px; }
+.sizes { display: flex; align-items: flex-end; justify-content: center; gap: 16px; margin-top: 16px; }
+.sizes figure { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.sizes figcaption { font-size: 11px; color: #9A94B3; font-weight: 600; }
+
+/* 아이폰 홈 화면 */
+.phones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.phone-col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.phone-col .cap { font-size: 14px; font-weight: 700; }
+.phone { width: 300px; height: 650px; border-radius: 50px; padding: 11px; background: #15131c; box-shadow: 0 28px 56px rgba(47,42,69,.22), inset 0 0 0 2px #2c2a34; flex-shrink: 0; }
+.screen { position: relative; width: 100%; height: 100%; border-radius: 40px; overflow: hidden;
+  background: radial-gradient(120% 70% at 20% 10%, #F9D7E6 0%, transparent 60%), radial-gradient(90% 60% at 90% 40%, #CFE7F7 0%, transparent 65%), linear-gradient(170deg, #E9E3FB 0%, #DCD6F7 55%, #CDE3F3 100%); }
+.island { position: absolute; top: 9px; left: 50%; transform: translateX(-50%); width: 92px; height: 26px; border-radius: 20px; background: #000; }
+.status { display: flex; justify-content: space-between; padding: 13px 26px 0; font: 600 13px -apple-system, sans-serif; color: #2F2A45; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); row-gap: 18px; padding: 34px 18px 0; }
+.app { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.app .ic { width: 52px; height: 52px; border-radius: 13px; overflow: hidden; }
+.app .nm { font: 500 10.5px -apple-system, "Pretendard", sans-serif; color: #2F2A45; white-space: nowrap; }
+.app.ours .nm { font-weight: 700; }
+.ghost { background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.7); display: flex; align-items: center; justify-content: center; }
+.ghost i { width: 22px; height: 22px; border-radius: 6px; opacity: .55; }
+.dock { position: absolute; left: 12px; right: 12px; bottom: 14px; height: 78px; border-radius: 28px; background: rgba(255,255,255,.35); border: 1px solid rgba(255,255,255,.6); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: space-around; padding: 0 14px; }
+.dots { position: absolute; bottom: 104px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+.dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(47,42,69,.25); }
+.dots span:first-child { background: rgba(47,42,69,.7); }
+.note { margin-top: 28px; padding: 18px 22px; border-radius: 16px; background: #EEEBFD; font-size: 14px; line-height: 1.7; }
+.note b { color: #5B4BD6; }
+
+@media (max-width: 1100px) { .cands, .phones { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .cands, .phones { grid-template-columns: 1fr; } .page { padding: 40px 16px 72px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>앱 아이콘 v2 · 홈 화면 미리보기</h1>
+  <p class="lead">아이폰 홈 화면에서 아이콘은 약 60pt로 보입니다. 아래 화면은 그 크기 비율 그대로 그렸습니다. LCD 창에 들어갈 문구를 지금의 "Calculator"와 판수가 고른 후보 세 개로 바꿔 끼워 비교해 보세요. 주변 앱은 크기 비교용 빈 아이콘입니다.</p>
+
+  <h2>LCD 문구 후보</h2>
+  <p class="sub">왼쪽부터 지금 버전, 후보 1~3. 아래 작은 아이콘이 실제 홈 화면(60)·설정(40)·알림(29) 크기입니다.</p>
+  <div class="cands" id="cands"></div>
+
+  <h2>아이폰 홈 화면에서</h2>
+  <p class="sub">두 번째 줄 가운데에 있는 아이콘이 우리 앱입니다.</p>
+  <div class="phones" id="phones"></div>
+
+  <div class="note">판수 추천은 <b>후보 1 "+−×÷"</b>입니다. 작게 줄여도 기호 모양이 살아 있어 글을 읽지 않고도 계산기로 알아보고, 아래 보라색 연산 버튼 줄과도 이어집니다. 숫자 느낌을 원하시면 후보 2 "123"이 그다음으로 잘 보입니다.</div>
+</div>
+
+<script>
+const CANDS = [
+  { text: "Calculator", tag: "지금 버전", size: 14, why: "단어는 정확하지만 작게 줄이면 글자가 뭉개집니다.", current: true },
+  { text: "+−×÷", tag: "후보 1 · 추천", size: 22, why: "사칙연산 기호. 언어와 상관없이 바로 계산기로 읽힙니다." },
+  { text: "123", tag: "후보 2", size: 24, why: "전자계산기 LCD의 가장 익숙한 모습. 숫자가 크게 들어갑니다." },
+  { text: "CALC", tag: "후보 3", size: 21, why: "영문 약자 네 글자. Calculator보다 두 배 가까이 크게 보입니다." },
+];
+
+// 아이콘 v2를 SVG로 그림 (피그마 App Icon v2와 같은 배치와 색)
+function iconSVG(text, size, px) {
+  const id = Math.random().toString(36).slice(2, 8);
+  const caps = [];
+  const PAL = [["#F8CFE0", "#E3A6C0"], ["#D9D3F8", "#AFA4E6"], ["#CDE9F5", "#97C7DE"]];
+  for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
+    const cx = 51 + c * 26, cy = 76 + r * 26;
+    let fill, dark, stroke = "";
+    if (r === 3 && c === 3) { fill = `url(#eq${id})`; dark = "#8F6FD0"; }
+    else if (c === 3) { fill = "#7C6CF2"; dark = "#5C4CD0"; }
+    else if (r === 0) { fill = "rgba(255,255,255,.75)"; dark = "#C9C2F2"; stroke = 'stroke="rgba(255,255,255,.9)" stroke-width="1"'; }
+    else { [fill, dark] = PAL[(r + c) % 3]; }
+    caps.push(`<circle cx="${cx}" cy="${cy + 2.5}" r="10" fill="${dark}"/><circle cx="${cx}" cy="${cy}" r="10" fill="${fill}" ${stroke}/><ellipse cx="${cx}" cy="${cy - 4.5}" rx="6" ry="2.6" fill="#fff" opacity=".45"/>`);
+  }
+  return `<svg width="${px}" height="${px}" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bg${id}" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0" stop-color="#FCE3EC"/><stop offset=".45" stop-color="#E6E4FB"/><stop offset="1" stop-color="#DDF0F7"/></linearGradient>
+      <linearGradient id="body${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".9"/><stop offset="1" stop-color="#ECE9FB" stop-opacity=".88"/></linearGradient>
+      <linearGradient id="lcd${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9E6FB"/><stop offset="1" stop-color="#D9D5F5"/></linearGradient>
+      <linearGradient id="eq${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8E7CF7"/><stop offset="1" stop-color="#F08BB4"/></linearGradient>
+      <filter id="sh${id}" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#504690" flood-opacity=".16"/></filter>
+    </defs>
+    <rect width="180" height="180" rx="40" fill="url(#bg${id})"/>
+    <rect x="28" y="12" width="124" height="156" rx="22" fill="url(#body${id})" stroke="rgba(255,255,255,.85)" stroke-width="1.5" filter="url(#sh${id})"/>
+    <rect x="40" y="24" width="100" height="30" rx="7" fill="url(#lcd${id})" stroke="#C8C0F3" stroke-width="1.5"/>
+    <text x="90" y="39.5" text-anchor="middle" dominant-baseline="central" font-family="Share Tech Mono, monospace" font-size="${size}" letter-spacing=".5" fill="#2F2A45">${text}</text>
+    ${caps.join("")}
+  </svg>`;
+}
+
+document.getElementById("cands").innerHTML = CANDS.map(c => `
+  <div class="cand ${c.current ? "current" : ""}">
+    <span class="tag">${c.tag}</span>
+    <h3>${c.text}</h3>
+    <p>${c.why}</p>
+    <div>${iconSVG(c.text, c.size, 140)}</div>
+    <div class="sizes">
+      <figure>${iconSVG(c.text, c.size, 60)}<figcaption>60</figcaption></figure>
+      <figure>${iconSVG(c.text, c.size, 40)}<figcaption>40</figcaption></figure>
+      <figure>${iconSVG(c.text, c.size, 29)}<figcaption>29</figcaption></figure>
+    </div>
+  </div>`).join("");
+
+// 홈 화면: 빈 아이콘 사이에 우리 앱 하나
+const GHOST = ["#F2A7C3", "#9FD2EE", "#B9A9F2", "#F7D58C", "#A8DDB7", "#F4B59A", "#C7C2D9", "#9FB7F2"];
+const NAMES = ["메모", "날씨", "사진", "시계", "지도", "음악", "카메라", "캘린더", "파일", "건강", "도서", "번역", "뉴스", "팟캐스트", "단축어"];
+function home(c) {
+  const apps = [];
+  let n = 0;
+  for (let i = 0; i < 16; i++) {
+    if (i === 5) { apps.push(`<div class="app ours"><div class="ic">${iconSVG(c.text, c.size, 52)}</div><div class="nm">Pastel Calc</div></div>`); continue; }
+    apps.push(`<div class="app"><div class="ic ghost"><i style="background:${GHOST[i % GHOST.length]}"></i></div><div class="nm">${NAMES[n++ % NAMES.length]}</div></div>`);
+  }
+  const dock = [0, 1, 2, 3].map(i => `<div class="app"><div class="ic ghost"><i style="background:${GHOST[(i + 3) % GHOST.length]}"></i></div></div>`).join("");
+  return `<div class="phone-col"><div class="phone"><div class="screen">
+      <div class="island"></div><div class="status"><span>9:41</span><span>●●● ◔</span></div>
+      <div class="grid">${apps.join("")}</div>
+      <div class="dots"><span></span><span></span></div>
+      <div class="dock">${dock}</div>
+    </div></div><div class="cap">${c.tag} · ${c.text}</div></div>`;
+}
+document.getElementById("phones").innerHTML = CANDS.map(home).join("");
+</script>
+</body>
+</html>
