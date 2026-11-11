@@ -139,6 +139,30 @@ final class Calculator {
         }
     }
 
+    /// 복사할 글자 (쉼표 없이, 붙여넣기 쉽게). 오류 상태면 nil
+    var copyText: String? {
+        guard errorMessage == nil else { return nil }
+        if let typing { return typing }
+        var plain = style
+        plain.grouping = false
+        return Self.format(currentValue, style: plain)
+    }
+
+    /// 붙여넣은 글자를 숫자로 읽어서 불러오기. 숫자가 아니면 false
+    @discardableResult
+    func paste(_ text: String) -> Bool {
+        let cleaned = text
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: ",", with: "")
+            .replacingOccurrences(of: "−", with: "-")
+        guard !cleaned.isEmpty,
+              cleaned.range(of: #"^-?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$"#, options: .regularExpression) != nil,
+              let value = Decimal(string: cleaned, locale: Locale(identifier: "en_US"))
+        else { return false }
+        recall(value)
+        return true
+    }
+
     /// 기록에서 고른 숫자를 불러오기
     func recall(_ value: Decimal) {
         if errorMessage != nil { clear() }
